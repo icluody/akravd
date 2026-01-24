@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AKRAV Ai - تسجيل الدخول</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts Arabic -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* أنماط مخصصة */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans Arabic', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #161616 100%);
+            color: #f0f0f0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .logo-container {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+        
+        .logo {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            border: 3px solid rgba(197, 160, 89, 0.4);
+            box-shadow: 0 10px 40px rgba(197, 160, 89, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .logo::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 30%, rgba(197, 160, 89, 0.1) 50%, transparent 70%);
+            animation: shine 3s infinite linear;
+        }
+        
+        .logo-icon {
+            font-size: 48px;
+            color: #c5a059;
+            text-shadow: 0 0 20px rgba(197, 160, 89, 0.5);
+        }
+        
+        .title {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #c5a059, #e0c070);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            color: #aaa;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+        
+        .auth-container {
+            width: 100%;
+            max-width: 420px;
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(197, 160, 89, 0.2);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+        
+        .auth-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #f0f0f0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .auth-button {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+        
+        .auth-button.google {
+            background: #4285F4;
+            color: white;
+        }
+        
+        .auth-button.google:hover {
+            background: #3367D6;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(66, 133, 244, 0.3);
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 25px 0;
+            color: #666;
+        }
+        
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .divider span {
+            padding: 0 15px;
+            font-size: 14px;
+        }
+        
+        .email-input {
+            width: 100%;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(197, 160, 89, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            margin-bottom: 15px;
+            outline: none;
+            transition: border 0.3s;
+        }
+        
+        .email-input:focus {
+            border-color: #c5a059;
+        }
+        
+        .auth-button.email {
+            background: linear-gradient(135deg, #c5a059, #b08c46);
+            color: white;
+        }
+        
+        .auth-button.email:hover {
+            background: linear-gradient(135deg, #b08c46, #a0783e);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(197, 160, 89, 0.3);
+        }
+        
+        .terms {
+            text-align: center;
+            color: #888;
+            font-size: 13px;
+            margin-top: 25px;
+            line-height: 1.5;
+        }
+        
+        .footer {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .security-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(197, 160, 89, 0.1);
+            border-top-color: #c5a059;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        .loading-text {
+            color: #c5a059;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .error-message {
+            background: rgba(255, 68, 68, 0.1);
+            color: #ff6b6b;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 68, 68, 0.2);
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .success-message {
+            background: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(76, 175, 80, 0.2);
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        /* الرسوم المتحركة */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        /* تصميم متجاوب */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 28px;
+            }
+            
+            .subtitle {
+                font-size: 14px;
+            }
+            
+            .auth-container {
+                padding: 30px 20px;
+                margin: 0 10px;
+            }
+            
+            .logo {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .logo-icon {
+                font-size: 40px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .title {
+                font-size: 24px;
+            }
+            
+            .auth-title {
+                font-size: 20px;
+            }
+            
+            .auth-button {
+                padding: 14px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- شاشة التحميل -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="loading-text">جاري التحضير...</div>
+    </div>
+    
+    <!-- المحتوى الرئيسي -->
+    <div class="main-container">
+        <!-- الشعار والعنوان -->
+        <div class="logo-container">
+            <div class="logo">
+                <i class="fas fa-skull logo-icon"></i>
+            </div>
+            <h1 class="title">AKRAV Ai</h1>
+            <p class="subtitle">ذكاء اصطناعي متقدم يدعم اللغة العربية، يمكنه مساعدتك في البرمجة، البحث، إنشاء الصور، والعديد من المهام الأخرى.</p>
+            <div class="security-badge">
+                <i class="fas fa-shield-alt"></i>
+                نظام أمني متكامل
+            </div>
+        </div>
+        
+        <!-- رسائل الخطأ والنجاح -->
+        <div id="error-message" class="error-message">
+            <i class="fas fa-exclamation-circle"></i>
+            <span id="error-text"></span>
+        </div>
+        
+        <div id="success-message" class="success-message">
+            <i class="fas fa-check-circle"></i>
+            <span id="success-text"></span>
+        </div>
+        
+        <!-- حاوية المصادقة -->
+        <div class="auth-container">
+            <h2 class="auth-title">تسجيل الدخول</h2>
+            
+            <!-- زر Google -->
+            <button id="google-login-btn" class="auth-button google">
+                <i class="fab fa-google"></i>
+                تسجيل الدخول عبر Google
+            </button>
+            
+            <!-- الفاصل -->
+            <div class="divider">
+                <span>أو</span>
+            </div>
+            
+            <!-- البريد الإلكتروني -->
+            <input type="email" id="email-input" class="email-input" placeholder="البريد الإلكتروني">
+            
+            <button id="email-login-btn" class="auth-button email">
+                <i class="fas fa-envelope"></i>
+                إرسال رابط تسجيل الدخول
+            </button>
+            
+            <!-- الشروط -->
+            <div class="terms">
+                بضغطك على "تسجيل الدخول"، فأنت توافق على شروط الاستخدام وسياسة الخصوصية.
+                <br>
+                نظام المصادقة يدعم التوجيه الهجين للتطبيقات والأجهزة المختلفة.
+            </div>
+        </div>
+        
+        <!-- التذييل -->
+        <div class="footer">
+            <p>© 2024 AKRAV Ai. جميع الحقوق محفوظة.</p>
+            <p style="color: #888; font-size: 12px; margin-top: 5px;">
+                إصدار 1.0.0 | نظام مصادقة Supabase | حماية متكاملة
+            </p>
+        </div>
+    </div>
+    
+    <!-- مكتبة Supabase -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
+    <!-- ملفات JavaScript المخصصة -->
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    
+    <!-- كود المصادقة الخاص بـ index.html -->
+    <script>
+        // سيتم تعبئة هذا بعد إنشاء js/auth.js
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📱 صفحة تسجيل الدخول جاهزة');
+        });
+    </script>
+</body>
+</html>

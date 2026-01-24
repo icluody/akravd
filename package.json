@@ -1,0 +1,16 @@
+{
+  "name": "akrav-ai",
+  "version": "1.0.0",
+  "description": "AKRAV Ai - Secure AI Assistant",
+  "scripts": {
+    "dev": "live-server . --port=3000",
+    "build": "echo 'No build required'",
+    "deploy": "netlify deploy --prod"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.7"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  }
+}

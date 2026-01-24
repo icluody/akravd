@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>معاينة HTML - AKRAV Ai</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0a;
+            color: #f0f0f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        
+        .preview-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .preview-header {
+            background: rgba(26, 26, 26, 0.95);
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(197, 160, 89, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header-title {
+            color: #c5a059;
+            font-weight: 700;
+            font-size: 18px;
+        }
+        
+        .header-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .control-btn {
+            background: rgba(197, 160, 89, 0.9);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .control-btn:hover {
+            background: #b08c46;
+            transform: translateY(-1px);
+        }
+        
+        .preview-content {
+            flex: 1;
+            position: relative;
+            background: white;
+            margin: 10px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid rgba(197, 160, 89, 0.3);
+        }
+        
+        #preview-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .loading-container, .error-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            gap: 20px;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(197, 160, 89, 0.1);
+            border-top-color: #c5a059;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error-icon {
+            font-size: 60px;
+            color: #ff4444;
+        }
+        
+        .language-badge {
+            background: rgba(197, 160, 89, 0.2);
+            color: #c5a059;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            border: 1px solid rgba(197, 160, 89, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-container">
+        <div class="preview-header">
+            <div class="header-title">
+                <i class="fas fa-code"></i>
+                معاينة HTML - AKRAV Ai
+            </div>
+            <div class="header-controls">
+                <div class="language-badge" id="language-badge">HTML</div>
+                <button class="control-btn" onclick="window.close()">
+                    <i class="fas fa-times"></i>
+                    إغلاق
+                </button>
+            </div>
+        </div>
+        
+        <div class="preview-content">
+            <div class="loading-container" id="loading">
+                <div class="loader"></div>
+                <div style="color: #c5a059; font-weight: 600;">جاري تحميل المعاينة...</div>
+            </div>
+            
+            <div class="error-container" id="errorContainer" style="display: none;">
+                <div class="error-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h2 style="color: white; margin-bottom: 15px; font-size: 24px;">حدث خطأ</h2>
+                <p style="color: #aaa; margin-bottom: 25px; line-height: 1.6;" id="errorText"></p>
+                <button class="control-btn" onclick="window.close()">
+                    <i class="fas fa-arrow-right"></i>
+                    العودة إلى AKRAV Ai
+                </button>
+            </div>
+            
+            <iframe id="preview-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-modals" style="display: none;"></iframe>
+        </div>
+    </div>
+
+    <script>
+        // Security and validation
+        async function validateAccess() {
+            try {
+                const data = sessionStorage.getItem('akrav_preview_code');
+                if (!data) {
+                    throw new Error('No preview data found');
+                }
+                
+                const parsed = JSON.parse(data);
+                
+                // Validate auth token
+                const authToken = parsed.auth_token;
+                if (!authToken) {
+                    throw new Error('Authentication required');
+                }
+                
+                // Optional: Validate token with Supabase
+                const response = await fetch('https://ptwteahlznfcvvnuhyzw.supabase.co/auth/v1/user', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'apikey': 'Sb_publishable_M-O4a54dij-a0iUzPwvCYg_u42wMFqF'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Invalid session');
+                }
+                
+                return parsed;
+            } catch (error) {
+                console.error('Validation error:', error);
+                showError('انتهت صلاحية الجلسة أو البيانات غير صالحة.');
+                return null;
+            }
+        }
+        
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('errorContainer').style.display = 'flex';
+            document.getElementById('errorText').textContent = message;
+        }
+        
+        async function renderPreview() {
+            const data = await validateAccess();
+            if (!data) return;
+            
+            const { lang, code } = data;
+            
+            // Update language badge
+            document.getElementById('language-badge').textContent = lang.toUpperCase();
+            
+            try {
+                // Create a complete HTML document with security sandbox
+                const htmlContent = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <style>
+                            * { margin: 0; padding: 0; box-sizing: border-box; }
+                            body {
+                                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+                                line-height: 1.6;
+                                padding: 20px;
+                                background: #f5f5f5;
+                                color: #333;
+                            }
+                            .code-output {
+                                background: white;
+                                border-radius: 8px;
+                                padding: 20px;
+                                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                                max-width: 1200px;
+                                margin: 0 auto;
+                            }
+                            pre {
+                                background: #1a1a1a;
+                                color: #f0f0f0;
+                                padding: 20px;
+                                border-radius: 8px;
+                                overflow-x: auto;
+                                margin: 20px 0;
+                                border: 1px solid rgba(197, 160, 89, 0.3);
+                            }
+                            code {
+                                font-family: 'Courier New', monospace;
+                            }
+                            .lang-html .output { border-left: 4px solid #e34c26; }
+                            .lang-css .output { border-left: 4px solid #2965f1; }
+                            .lang-js .output { border-left: 4px solid #f0db4f; }
+                            .lang-python .output { border-left: 4px solid #3572A5; }
+                        </style>
+                    </head>
+                    <body class="lang-${lang}">
+                        <div class="code-output">
+                            ${lang === 'html' ? code : `<pre><code>${escapeHtml(code)}</code></pre>`}
+                        </div>
+                    </body>
+                    </html>
+                `;
+                
+                const iframe = document.getElementById('preview-frame');
+                document.getElementById('loading').style.display = 'none';
+                iframe.style.display = 'block';
+                
+                // Write content to iframe
+                iframe.contentDocument.open();
+                iframe.contentDocument.write(htmlContent);
+                iframe.contentDocument.close();
+                
+            } catch (error) {
+                console.error('Render error:', error);
+                showError('فشل تحميل المعاينة.');
+            }
+        }
+        
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', renderPreview);
+    </script>
+</body>
+</html>
