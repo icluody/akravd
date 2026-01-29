@@ -1,196 +1,128 @@
-// js/auth.js — Central Auth System (FULL & FIXED)
-(function () {
-  'use strict';
+/**
+ * AKRAV Ai - Advanced Authentication System
+ * تم إصلاح ربط الأزرار وإصلاح مشكلة حلقة إعادة التوجيه
+ */
 
-  /* ======================= CONFIG ======================= */
-  const CONFIG = {
-    supabase: {
-      url: 'https://ptwteahlznfcvvnuhyzw.supabase.co',
-      anonKey: 'Sb_publishable_M-O4a54dij-a0iUzPwvCYg_u42wMFqF'
-    },
-    urls: {
-      login: 'https://akrav-d.netlify.app/index.html',
-      home: 'https://akrav-d.netlify.app/ai.html'
-    },
-    security: {
-      requireAuth: true,
-      checkInterval: 60_000
-    },
-    storage: {
-      userKey: 'akrav-user-data',
-      settingsKey: 'akrav-user-settings'
-    }
-  };
+(function() {
+    'use strict';
+    
+    const CONFIG = {
+        supabase: {
+            url: 'https://ptwtzahiznfcvnuhyzw.supabase.co',
+            anonKey: 'Sb_publishable_M-O4a54dij-a0iUzPwvCYg_u42wMFqF'
+        },
+        settings: {
+            appPage: 'ai.html',
+            loginPage: 'index.html',
+            storageKey: 'sb-akrav-auth-token'
+        }
+    };
+    
+    class AuthManager {
+        constructor() {
+            this.supabase = window.supabase.createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey, {
+                auth: {
+                    persistSession: true,
+                    detectSessionInUrl: true,
+                    storageKey: CONFIG.settings.storageKey
+                }
+            });
+            this.init();
+        }
+        
+        async init() {
+            // مراقبة حالة المصادقة
+            this.supabase.auth.onAuthStateChange((event, session) => {
+                if (event === 'SIGNED_IN' && this.isLoginPage()) {
+                    window.location.href = CONFIG.settings.appPage;
+                }
+                if (event === 'SIGNED_OUT' && !this.isLoginPage()) {
+                    window.location.href = CONFIG.settings.loginPage;
+                }
+            });
 
-  /* ======================= HELPERS ======================= */
-  const isLoginPage = () => {
-    const p = location.pathname;
-    return p === '/' || p === '/index.html' || p.endsWith('/index.html');
-  };
+            // التحقق من الجلسة الحالية عند التحميل
+            const { data: { session } } = await this.supabase.auth.getSession();
+            if (session && this.isLoginPage()) {
+                window.location.href = CONFIG.settings.appPage;
+            }
 
-  const redirect = (url) => {
-    window.location.replace(url);
-  };
-
-  /* ======================= CLIENT ======================= */
-  if (!window.supabase?.createClient) {
-    console.error('❌ Supabase SDK not loaded');
-    return;
-  }
-
-  const supabase = window.supabase.createClient(
-    CONFIG.supabase.url,
-    CONFIG.supabase.anonKey,
-    {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        storage: window.localStorage
-      }
-    }
-  );
-
-  /* ======================= AUTH MANAGER ======================= */
-  class AuthManager {
-    constructor() {
-      this.user = null;
-      this.session = null;
-      this.authenticated = false;
-      this.listeners = [];
-      this.init();
-    }
-
-    /* ---------- INIT ---------- */
-    async init() {
-      this.hidePage();
-      await this.restoreSession();
-      this.bindAuthEvents();
-      this.startSessionWatcher();
-      this.showPage();
-    }
-
-    /* ---------- SESSION ---------- */
-    async restoreSession() {
-      const { data } = await supabase.auth.getSession();
-      const session = data?.session;
-
-      if (!session) return this.noSession();
-
-      if (session.expires_at && Date.now() >= session.expires_at * 1000) {
-        await supabase.auth.signOut();
-        return this.noSession();
-      }
-
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData?.user) return this.noSession();
-
-      this.session = session;
-      this.user = userData.user;
-      this.authenticated = true;
-
-      window.akravUser = this.user;
-      window.akravSession = this.session;
-
-      if (isLoginPage()) redirect(CONFIG.urls.home);
-    }
-
-    noSession() {
-      this.session = null;
-      this.user = null;
-      this.authenticated = false;
-
-      window.akravUser = null;
-      window.akravSession = null;
-
-      if (CONFIG.security.requireAuth && !isLoginPage()) {
-        redirect(CONFIG.urls.login);
-      }
-    }
-
-    /* ---------- EVENTS ---------- */
-    bindAuthEvents() {
-      supabase.auth.onAuthStateChange((event, session) => {
-        if (event === 'SIGNED_IN') {
-          this.session = session;
-          this.authenticated = true;
-          redirect(CONFIG.urls.home);
+            // ربط الأزرار فور تحميل الـ DOM
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => this.bindUI());
+            } else {
+                this.bindUI();
+            }
         }
 
-        if (event === 'SIGNED_OUT') {
-          this.noSession();
+        // هذه الدالة هي المسؤولة عن جعل الأزرار تتفاعل مرة أخرى
+        bindUI() {
+            const googleBtn = document.getElementById('google-login-btn');
+            const emailBtn = document.getElementById('email-login-btn');
+            const emailInput = document.getElementById('email-input');
+
+            if (googleBtn) {
+                googleBtn.onclick = async () => {
+                    try {
+                        await this.signInWithGoogle();
+                    } catch (err) {
+                        this.showError('فشل تسجيل الدخول عبر Google');
+                    }
+                };
+            }
+
+            if (emailBtn && emailInput) {
+                emailBtn.onclick = async () => {
+                    const email = emailInput.value.trim();
+                    if (!email) return this.showError('يرجى إدخال البريد الإلكتروني');
+                    try {
+                        await this.signInWithEmail(email);
+                        alert('تفقد بريدك الإلكتروني للحصول على رابط الدخول');
+                    } catch (err) {
+                        this.showError('فشل إرسال الرابط');
+                    }
+                };
+            }
         }
-      });
-    }
 
-    /* ---------- WATCHER ---------- */
-    startSessionWatcher() {
-      setInterval(async () => {
-        if (!this.session) return;
-        if (this.session.expires_at * 1000 <= Date.now()) {
-          await this.signOut();
+        async signInWithGoogle() {
+            const { error } = await this.supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: `${window.location.origin}/${CONFIG.settings.appPage}`
+                }
+            });
+            if (error) throw error;
         }
-      }, CONFIG.security.checkInterval);
-    }
 
-    /* ---------- AUTH ACTIONS ---------- */
-    async signInWithGoogle() {
-      return supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: CONFIG.urls.home
+        async signInWithEmail(email) {
+            const { error } = await this.supabase.auth.signInWithOtp({
+                email: email,
+                options: {
+                    emailRedirectTo: `${window.location.origin}/${CONFIG.settings.appPage}`
+                }
+            });
+            if (error) throw error;
         }
-      });
-    }
 
-    async signInWithEmail(email) {
-      return supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: CONFIG.urls.home,
-          shouldCreateUser: true
+        isLoginPage() {
+            const path = window.location.pathname;
+            return path.endsWith(CONFIG.settings.loginPage) || path.endsWith('/') || path === '';
         }
-      });
+
+        showError(msg) {
+            const errorText = document.getElementById('error-text');
+            const errorDiv = document.getElementById('error-message');
+            if (errorDiv && errorText) {
+                errorText.innerText = msg;
+                errorDiv.style.display = 'flex';
+                setTimeout(() => errorDiv.style.display = 'none', 3000);
+            } else {
+                alert(msg);
+            }
+        }
     }
 
-    async signOut() {
-      await supabase.auth.signOut();
-      this.noSession();
-    }
-
-    /* ---------- DATA ---------- */
-    loadUserData() {
-      try {
-        return JSON.parse(localStorage.getItem(CONFIG.storage.userKey)) || {};
-      } catch {
-        return {};
-      }
-    }
-
-    saveUserData(data) {
-      localStorage.setItem(CONFIG.storage.userKey, JSON.stringify(data));
-    }
-
-    /* ---------- UI ---------- */
-    hidePage() {
-      if (!isLoginPage()) document.documentElement.style.visibility = 'hidden';
-    }
-
-    showPage() {
-      document.documentElement.style.visibility = '';
-    }
-
-    /* ---------- API ---------- */
-    isLoggedIn() { return this.authenticated; }
-    getUser() { return this.user; }
-    getSession() { return this.session; }
-    getClient() { return supabase; }
-  }
-
-  /* ======================= BOOTSTRAP ======================= */
-  window.akravAuth = new AuthManager();
-  window.signInWithGoogle = () => window.akravAuth.signInWithGoogle();
-  window.signInWithEmail = (e) => window.akravAuth.signInWithEmail(e);
-  window.signOut = () => window.akravAuth.signOut();
-
+    // تهيئة النظام
+    window.akravAuth = new AuthManager();
 })();
